@@ -39,14 +39,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var DebugPlatform = (function () {
     function DebugPlatform() {
     }
-    DebugPlatform.prototype.getUserInfo = function () {
+    DebugPlatform.prototype.login = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, { nickName: "username" }];
+                return [2 /*return*/];
             });
         });
     };
-    DebugPlatform.prototype.login = function () {
+    DebugPlatform.prototype.navigateToMiniProgram = function (evt, extra) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/];

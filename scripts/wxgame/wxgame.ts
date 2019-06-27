@@ -18,6 +18,9 @@ export class WxgamePlugin implements plugins.Command {
             }
             else {
                 let content = file.contents.toString();
+                if (filename == "libs/modules/md5/md5.js" || filename == 'libs/modules/md5/md5.min.js') {
+                    content += ";window.md5 = md5;"
+                }
                 if (
                     filename == "libs/modules/res/res.js" ||
                     filename == 'libs/modules/res/res.min.js' ||

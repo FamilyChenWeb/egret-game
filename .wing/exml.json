@@ -1,7 +1,35 @@
 {
-    "16b745c6859": {
-        "path": "game\\eUl.ts",
-        "class": "eUl",
-        "parentPath": ""
-    }
+  "16b745c6859": {
+    "path": "game\\eUl.ts",
+    "class": "eUl",
+    "parentPath": ""
+  },
+  "global": {
+    "globalAutoLayerMarkEnable": false,
+    "globalAdsorbEnable": true,
+    "globalRulerEnable": true,
+    "globalBindingDataTestObj": []
+  },
+  "16b8d82fb2a": {
+    "backgroundType": "user",
+    "useBgImage": false,
+    "useBgColor": true,
+    "backgroundX": 0,
+    "backgroundY": 0,
+    "backgroundWidth": -1,
+    "backgroundHeight": -1,
+    "backgroundAlpha": 100,
+    "bindingDataTestObj": []
+  },
+  "16b8dc72a3e": {
+    "backgroundType": "null",
+    "backgroundColor": "#000000",
+    "backgroundX": 0,
+    "backgroundY": 0,
+    "backgroundWidth": -1,
+    "backgroundHeight": -1,
+    "useBgImage": true,
+    "useBgColor": true,
+    "backgroundAlpha": "50"
+  }
 }

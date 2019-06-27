@@ -1,6 +1,6 @@
 {
-  "engineVersion": "5.2.21",
-  "compilerVersion": "5.2.21",
+  "engineVersion": "5.2.13",
+  "compilerVersion": "5.2.13",
   "template": {},
   "target": {
     "current": "wxgame"
@@ -20,6 +20,10 @@
     },
     {
       "name": "promise"
+    },
+    {
+      "name": "md5",
+      "path": "../md5"
     }
   ]
 }

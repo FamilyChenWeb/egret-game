@@ -1,35 +1,5 @@
-//////////////////////////////////////////////////////////////////////////////////////
-//
-//  Copyright (c) 2014-present, Egret Technology.
-//  All rights reserved.
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of the Egret nor the
-//       names of its contributors may be used to endorse or promote products
-//       derived from this software without specific prior written permission.
-//
-//  THIS SOFTWARE IS PROVIDED BY EGRET AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
-//  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-//  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-//  IN NO EVENT SHALL EGRET AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-//  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;LOSS OF USE, DATA,
-//  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-//  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-//  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-//////////////////////////////////////////////////////////////////////////////////////
 
 class Main extends eui.UILayer {
-
-
     protected createChildren(): void {
         super.createChildren();
 
@@ -51,7 +21,6 @@ class Main extends eui.UILayer {
         egret.registerImplementation("eui.IAssetAdapter", assetAdapter);
         egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter());
 
-
         this.runGame().catch(e => {
             console.log(e);
         })
@@ -59,13 +28,98 @@ class Main extends eui.UILayer {
 
     private async runGame() {
         await this.loadResource()
-        this.createGameScene();
-        const result = await RES.getResAsync("description_json")
-        this.startAnimation(result);
-        await platform.login();
-        const userInfo = await platform.getUserInfo();
-        console.log(userInfo);
+        const e: any = await wx.getLaunchOptionsSync()
+        const pkey = e.query.pkey ? e.query.pkey : ''
+        const login = await platform.login();
+        await this.getLogin(login.code, pkey)
+    }
 
+    private async getLogin (code, pkey) {
+        const that = this
+        const time = await this.getTime();
+        const data = {
+            code: code,
+            pkey: pkey,
+            time: time
+        }
+        const sign = await this.makeSign(data);
+        const param = {
+            code: code,
+            pkey: '',
+            time: time,
+            sign: sign
+        }
+        let httpRequest:egret.HttpRequest = new egret.HttpRequest();
+        httpRequest.responseType = egret.HttpResponseType.TEXT;
+        httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+        httpRequest.addEventListener(egret.Event.COMPLETE,function(evt:egret.Event):void {
+            const res = JSON.parse(httpRequest.response)
+            console.log(res);
+            egret.localStorage.setItem('guide', res.data.guide)
+            egret.localStorage.setItem('userId', res.data.id)
+            egret.localStorage.setItem('token', res.data.token)
+            that.getGame();
+        },this);
+        httpRequest.open("https://apinine.xiaozigame.com/api/app/login", egret.HttpMethod.POST);
+        httpRequest.send(param);
+    }
+
+    private async getGame () {
+        const arr = []
+        const token = egret.localStorage.getItem('token')
+        const that = this
+        const time = await this.getTime();
+        const data = {
+            token: token,
+            time: time
+        }
+        const sign = await this.makeSign(data);
+        const param = {
+            token: token,
+            time: time,
+            sign: sign
+        }
+        let httpRequest:egret.HttpRequest = new egret.HttpRequest();
+        httpRequest.responseType = egret.HttpResponseType.TEXT;
+        httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+        httpRequest.addEventListener(egret.Event.COMPLETE,function(evt:egret.Event):void {
+            const res = JSON.parse(httpRequest.response)
+            arr.push(
+                res.data.gamelist[0],
+                res.data.gamelist[4],
+                res.data.gamelist[5],
+                res.data.gamelist[6],
+                res.data.gamelist[7],
+                res.data.gamelist[8],
+                res.data.gamelist[10],
+                res.data.gamelist[12]
+            )
+            that.createGameScene(arr);
+        },this);
+        httpRequest.open("https://apinine.xiaozigame.com/api/active/getgamelist", egret.HttpMethod.GET);
+        httpRequest.send(param);
+    }
+
+    private async makeSign (obj) {
+        const secret = '94f0dcc59b3a1af75cdb9'
+        let str = ''
+        //生成key升序数组
+        let arr = Object.keys(obj)
+        arr.sort()
+        for (let i in arr) {
+          str += `&${arr[i]}=${obj[arr[i]]}`
+        }
+        str = str.substring(1)
+        let encrypted:string = new md5().hex_md5(str);
+        let theencrypted:string = new md5().hex_md5(encrypted + secret);
+        return theencrypted
+    }
+
+    private async getTime () {
+        const date = new Date().toString()
+        let time = Date.parse(date)
+        time = time / 1000
+        return time
     }
 
     private async loadResource() {
@@ -94,118 +148,117 @@ class Main extends eui.UILayer {
         })
     }
 
-    private textfield: egret.TextField;
+    /*navigateToMiniProgram(res, extra) {
+        let path = ''
+        if (res.extra === '') {
+            path = extra
+        } else {
+            path = ''
+        }
+        return new Promise((resolve, reject) => {
+            wx.navigateToMiniProgram({
+                appId: res.appid,
+                path: path,
+                envVersion: 'release',
+                success(res) {
+                    console.log('path', path);
+                    resolve(res)
+                }
+            })
+        })
+    }*/
+    
+    private onClick( evt, extra ) {
+        const userId = egret.localStorage.getItem('userId')
+        platform.navigateToMiniProgram(evt, extra).then(res => {
+            console.log(res)
+            
+            const that = this
+            const data = JSON.stringify({
+              uid: userId,
+              gid: evt.id,
+            })
+            const param = {
+              appv: '1.0',
+              counter: 'enter',
+              data: data
+            }
+            let httpRequest:egret.HttpRequest = new egret.HttpRequest();
+            httpRequest.responseType = egret.HttpResponseType.TEXT;
+            httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            httpRequest.addEventListener(egret.Event.COMPLETE,function(evt:egret.Event):void {
+                const res = JSON.parse(httpRequest.response)
+                console.log(res);
+            },this);
+            httpRequest.open("https://testapione.xiaozigame.com/report", egret.HttpMethod.GET);
+            httpRequest.send(param);
+        })
+    }
+
     /**
      * 创建场景界面
      * Create scene interface
      */
-    protected createGameScene(): void {
-        let sky = this.createBitmapByName("bg_jpg");
-        this.addChild(sky);
-        let stageW = this.stage.stageWidth;
-        let stageH = this.stage.stageHeight;
-        sky.width = stageW;
-        sky.height = stageH;
+    protected createGameScene(arr): void {
+        const userId = egret.localStorage.getItem('userId')
+        let labelA = new eui.Label();
+        labelA.x = 0;
+        labelA.y = 0;
+        labelA.width = this.stage.stageWidth;
+        labelA.height = this.stage.stageHeight;
+        labelA.background = true;
+        labelA.backgroundColor = 0xffffff
+        this.addChild(labelA);
 
-        let topMask = new egret.Shape();
-        topMask.graphics.beginFill(0x000000, 0.5);
-        topMask.graphics.drawRect(0, 0, stageW, 172);
-        topMask.graphics.endFill();
-        topMask.y = 33;
-        this.addChild(topMask);
-
-        let icon: egret.Bitmap = this.createBitmapByName("egret_icon_png");
-        this.addChild(icon);
-        icon.x = 26;
-        icon.y = 33;
-
-        let line = new egret.Shape();
-        line.graphics.lineStyle(2, 0xffffff);
-        line.graphics.moveTo(0, 0);
-        line.graphics.lineTo(0, 117);
-        line.graphics.endFill();
-        line.x = 172;
-        line.y = 61;
-        this.addChild(line);
-
-
-        let colorLabel = new egret.TextField();
-        colorLabel.textColor = 0xffffff;
-        colorLabel.width = stageW - 172;
-        colorLabel.textAlign = "center";
-        colorLabel.text = "Hello Egret";
-        colorLabel.size = 24;
-        colorLabel.x = 172;
-        colorLabel.y = 80;
-        this.addChild(colorLabel);
-
-        let textfield = new egret.TextField();
-        this.addChild(textfield);
-        textfield.alpha = 0;
-        textfield.width = stageW - 172;
-        textfield.textAlign = egret.HorizontalAlign.CENTER;
-        textfield.size = 24;
-        textfield.textColor = 0xffffff;
-        textfield.x = 172;
-        textfield.y = 135;
-        this.textfield = textfield;
-
-        let button = new eui.Button();
-        button.label = "Click!";
-        button.horizontalCenter = 0;
-        button.verticalCenter = 0;
-        this.addChild(button);
-        button.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onButtonClick, this);
-    }
-    /**
-     * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
-     * Create a Bitmap object according to name keyword.As for the property of name please refer to the configuration file of resources/resource.json.
-     */
-    private createBitmapByName(name: string): egret.Bitmap {
-        let result = new egret.Bitmap();
-        let texture: egret.Texture = RES.getRes(name);
-        result.texture = texture;
-        return result;
-    }
-    /**
-     * 描述文件加载成功，开始播放动画
-     * Description file loading is successful, start to play the animation
-     */
-    private startAnimation(result: Array<any>): void {
-        let parser = new egret.HtmlTextParser();
-
-        let textflowArr = result.map(text => parser.parse(text));
-        let textfield = this.textfield;
-        let count = -1;
-        let change = () => {
-            count++;
-            if (count >= textflowArr.length) {
-                count = 0;
+        let group = new eui.Group();
+        let label = new eui.Label();
+        label.text = "游戏盒子标题";
+        label.x = 0;
+        label.y = 0;
+        label.width = this.stage.stageWidth;
+        label.height = 65;
+        label.background = true;
+        label.backgroundColor = 0xffffff
+        label.size = 16;
+        label.textColor = 0x000000
+        label.textAlign = 'center'
+        label.verticalAlign = 'middle'
+        this.addChild(label);
+        let name = []
+        arr.map((item, index) => {
+            name[index] = 'img_' + index
+            if (index%2) {
+                name[index] = new eui.Image(`https://apithree.xiaozigame.com/static/uploads/game/${item.img}`);
+                name[index].x = (15 + 15 * 1) + (((this.stage.stageWidth - 15 * 3) / 2) * 1)
+                name[index].y = (15 + 15 * (index - 1)) + (100 * (index - 1))
+                name[index].width = (this.stage.stageWidth - 15 * 3) / 2;
+                name[index].height = 220
+                group.addChild(name[index]);
+            } else {
+                name[index] = new eui.Image(`https://apithree.xiaozigame.com/static/uploads/game/${item.img}`);
+                name[index].x = 15
+                name[index].y = (15 + 15 * index) + (100 * index);
+                name[index].width = (this.stage.stageWidth - 15 * 3) / 2;
+                name[index].height = 220
+                group.addChild(name[index]);
             }
-            let textFlow = textflowArr[count];
-
-            // 切换描述内容
-            // Switch to described content
-            textfield.textFlow = textFlow;
-            let tw = egret.Tween.get(textfield);
-            tw.to({ "alpha": 1 }, 200);
-            tw.wait(2000);
-            tw.to({ "alpha": 0 }, 200);
-            tw.call(change, this);
-        };
-
-        change();
-    }
-
-    /**
-     * 点击按钮
-     * Click the button
-     */
-    private onButtonClick(e: egret.TouchEvent) {
-        let panel = new eui.Panel();
-        panel.title = "Title";
-        panel.horizontalCenter = 0;
-        panel.verticalCenter = 0;
-        this.addChild(panel);
+            let extra = ''
+            if (item.extra === '') {
+                extra = ''
+            } else {
+                extra = `?data=${JSON.stringify({uid: userId, gid: item.id})}`
+            }
+            name[index].addEventListener( egret.TouchEvent.TOUCH_TAP, this.onClick.bind(this, item, extra), this );
+        })
+        //创建一个Scroller
+        let myScroller = new eui.Scroller();
+        //注意位置和尺寸的设置是在Scroller上面，而不是容器上面
+        myScroller.y = 65;
+        myScroller.x = 0;
+        myScroller.width = this.stage.stageWidth;
+        myScroller.height = this.stage.stageHeight - 65;
+        //设置viewport
+        myScroller.viewport = group;
+        this.addChild(myScroller);
     }
 }
