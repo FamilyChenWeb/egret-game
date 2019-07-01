@@ -1,16 +1,11 @@
 {
 	"groups": [
 		{
-			"keys": "description_json,p0_09_png,p0_08_png,p0_07_png,p0_06_png,p0_05_png,p0_04_png,p0_03_png,p0_02_png,p0_01_png",
+			"keys": "p0_09_png,p0_08_png,p0_07_png,p0_06_png,p0_05_png,p0_04_png,p0_03_png,p0_02_png,p0_01_png",
 			"name": "preload"
 		}
 	],
 	"resources": [
-		{
-			"url": "config/description.json",
-			"type": "json",
-			"name": "description_json"
-		},
 		{
 			"url": "assets/picEasy/p0_01.png",
 			"type": "image",

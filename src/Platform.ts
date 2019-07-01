@@ -26,8 +26,3 @@ declare interface Window {
 
     platform: Platform
 }
-
-
-
-
-

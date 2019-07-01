@@ -14,13 +14,11 @@
 		"bin-debug/Main.js",
 		"bin-debug/Platform.js",
 		"bin-debug/ThemeAdapter.js",
-		"bin-debug/game/Content.js",
 		"bin-debug/LoadingUI.js",
 		"bin-debug/game/GameDate.js",
 		"bin-debug/game/GameOverPanel.js",
 		"bin-debug/game/GameStartPanel.js",
 		"bin-debug/game/puzzle.js",
-		"bin-debug/game/puzzlepart.js",
-		"bin-debug/game/Title.js"
+		"bin-debug/game/puzzlepart.js"
 	]
 }

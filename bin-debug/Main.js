@@ -47,7 +47,7 @@ var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.guide = '1'; //判断显示游戏列表
+        _this.guide = '0'; //判断显示游戏列表
         return _this;
     }
     Main.prototype.createChildren = function () {
@@ -349,7 +349,7 @@ var Main = (function (_super) {
         this.addChild(labelA);
         var group = new eui.Group();
         var label = new eui.Label();
-        label.text = "游戏盒子标题";
+        label.text = "迷你抢手";
         label.x = 0;
         label.y = 0;
         label.width = this.stage.stageWidth;

@@ -255,7 +255,7 @@ class Main extends eui.UILayer {
 
         let group = new eui.Group();
         let label = new eui.Label();
-        label.text = "游戏盒子标题";
+        label.text = "迷你抢手";
         label.x = 0;
         label.y = 0;
         label.width = this.stage.stageWidth;

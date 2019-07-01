@@ -1,13 +1,8 @@
 {
-	"skins": {
-		"Title": "resource/eui_skins/Title.exml",
-		"content": "resource/eui_skins/content.exml",
-		"Content": "resource/eui_skins/Content.exml"
-	},
-	"autoGenerateExmlsList": true,
-	"exmls": [
-		"resource/eui_skins/Content.exml",
-		"resource/eui_skins/Title.exml"
-	],
-	"path": "resource/default.thm.json"
+    "skins": {
+    },
+    "autoGenerateExmlsList": true,
+    "exmls": [
+    ],
+    "path": "resource/default.thm.json"
 }

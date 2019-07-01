@@ -30,17 +30,8 @@ var GameOverPanel = (function (_super) {
         this.graphics.drawRoundRect(0, 0, this.ma.rootStagW - 20, this.ma.rootStagW / 3, 60, 60);
         this.graphics.endFill();
         this.alpha = 0.8;
-        // this.tittle = new egret.TextField();
-        // this.tittle.text = "Success !";
-        // this.tittle.size = 22;
-        // this.tittle.stroke = 3;
-        // this.tittle.strokeColor = 0x555555;
-        // this.tittle.textColor = 0xffffff;
-        // this.tittle.x = 0;
-        // this.tittle.y = 0;
-        // this.addChild(this.tittle);
         this.stepTxt = new egret.TextField();
-        this.stepTxt.text = "你一共走了 " + GameData.step + " 步";
+        this.stepTxt.text = "恭喜你通关了";
         this.stepTxt.size = 16;
         this.stepTxt.stroke = 3;
         this.stepTxt.textColor = 0xffffff;
