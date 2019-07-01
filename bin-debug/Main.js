@@ -46,7 +46,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.guide = '1'; //判断显示游戏列表
+        return _this;
     }
     Main.prototype.createChildren = function () {
         _super.prototype.createChildren.call(this);
@@ -124,7 +126,12 @@ var Main = (function (_super) {
                             egret.localStorage.setItem('guide', res.data.guide);
                             egret.localStorage.setItem('userId', res.data.id);
                             egret.localStorage.setItem('token', res.data.token);
-                            that.getGame();
+                            if (res.data.guide == that.guide) {
+                                that.getGame(res.data.guide);
+                            }
+                            else {
+                                that.getCs();
+                            }
                         }, this);
                         httpRequest.open("https://apinine.xiaozigame.com/api/app/login", egret.HttpMethod.POST);
                         httpRequest.send(param);
@@ -133,7 +140,7 @@ var Main = (function (_super) {
             });
         });
     };
-    Main.prototype.getGame = function () {
+    Main.prototype.getGame = function (guide) {
         return __awaiter(this, void 0, void 0, function () {
             var arr, token, that, time, data, sign, param, httpRequest;
             return __generator(this, function (_a) {
@@ -162,7 +169,10 @@ var Main = (function (_super) {
                         httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
                         httpRequest.addEventListener(egret.Event.COMPLETE, function (evt) {
                             var res = JSON.parse(httpRequest.response);
-                            arr.push(res.data.gamelist[0], res.data.gamelist[4], res.data.gamelist[5], res.data.gamelist[6], res.data.gamelist[7], res.data.gamelist[8], res.data.gamelist[10], res.data.gamelist[12]);
+                            res.data.gamelist.map(function (item) {
+                                arr.push(item);
+                                console.log(item.appid);
+                            });
                             that.createGameScene(arr);
                         }, this);
                         httpRequest.open("https://apinine.xiaozigame.com/api/active/getgamelist", egret.HttpMethod.GET);
@@ -242,24 +252,32 @@ var Main = (function (_super) {
         });
     };
     /*navigateToMiniProgram(res, extra) {
+        console.log(res, extra)
         let path = ''
         if (res.extra === '') {
-            path = extra
+        path = extra
         } else {
-            path = ''
+        path = ''
         }
         return new Promise((resolve, reject) => {
-            wx.navigateToMiniProgram({
-                appId: res.appid,
-                path: path,
-                envVersion: 'release',
-                success(res) {
-                    console.log('path', path);
-                    resolve(res)
-                }
-            })
+        wx.navigateToMiniProgram({
+            appId: res.appid,
+            path: path,
+            envVersion: 'release',
+            success(res) {
+            console.log('success', path);
+            resolve(res)
+            },
+            fail(res) {
+            console.log('fail');
+            reject(res)
+            }
         })
-    }*/
+        })
+    }
+    "navigateToMiniProgramAppIdList": [
+        "wx3a2acd8aea020457"
+    ]*/
     Main.prototype.onClick = function (evt, extra) {
         var _this = this;
         var userId = egret.localStorage.getItem('userId');
@@ -269,6 +287,7 @@ var Main = (function (_super) {
             var data = JSON.stringify({
                 uid: userId,
                 gid: evt.id,
+                type: '1'
             });
             var param = {
                 appv: '1.0',
@@ -282,14 +301,41 @@ var Main = (function (_super) {
                 var res = JSON.parse(httpRequest.response);
                 console.log(res);
             }, _this);
-            httpRequest.open("https://testapione.xiaozigame.com/report", egret.HttpMethod.GET);
+            httpRequest.open("https://apione.xiaozigame.com/report", egret.HttpMethod.GET);
+            httpRequest.send(param);
+        }).catch(function (res) {
+            console.log('点击取消');
+            console.log(res);
+            var that = _this;
+            var data = JSON.stringify({
+                uid: userId,
+                gid: evt.id,
+                type: '0'
+            });
+            var param = {
+                appv: '1.0',
+                counter: 'enter',
+                data: data
+            };
+            var httpRequest = new egret.HttpRequest();
+            httpRequest.responseType = egret.HttpResponseType.TEXT;
+            httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            httpRequest.addEventListener(egret.Event.COMPLETE, function (evt) {
+                var res = JSON.parse(httpRequest.response);
+                console.log(res);
+            }, _this);
+            httpRequest.open("https://apione.xiaozigame.com/report", egret.HttpMethod.GET);
             httpRequest.send(param);
         });
     };
-    /**
-     * 创建场景界面
-     * Create scene interface
-     */
+    Main.prototype.getCs = function () {
+        this.rootStagW = this.stage.stageWidth;
+        this.rootStagH = this.stage.stageHeight;
+        var gamePuzzle = new puzzle();
+        gamePuzzle.x = -5;
+        gamePuzzle.y = (this.stage.stageHeight - gamePuzzle.height) / 2;
+        this.addChild(gamePuzzle);
+    };
     Main.prototype.createGameScene = function (arr) {
         var _this = this;
         var userId = egret.localStorage.getItem('userId');
@@ -335,7 +381,7 @@ var Main = (function (_super) {
                 group.addChild(name[index]);
             }
             var extra = '';
-            if (item.extra === '') {
+            if (item.extra !== '') {
                 extra = '';
             }
             else {

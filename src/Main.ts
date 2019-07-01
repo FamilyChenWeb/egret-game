@@ -1,5 +1,7 @@
 
 class Main extends eui.UILayer {
+    public guide:number | string = '0';//判断显示游戏列表
+
     protected createChildren(): void {
         super.createChildren();
 
@@ -58,13 +60,17 @@ class Main extends eui.UILayer {
             egret.localStorage.setItem('guide', res.data.guide)
             egret.localStorage.setItem('userId', res.data.id)
             egret.localStorage.setItem('token', res.data.token)
-            that.getGame();
+            if (res.data.guide == that.guide) {
+                that.getGame(res.data.guide);
+            } else {
+                that.getCs()
+            }
         },this);
         httpRequest.open("https://apinine.xiaozigame.com/api/app/login", egret.HttpMethod.POST);
         httpRequest.send(param);
     }
 
-    private async getGame () {
+    private async getGame (guide) {
         const arr = []
         const token = egret.localStorage.getItem('token')
         const that = this
@@ -84,16 +90,10 @@ class Main extends eui.UILayer {
         httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
         httpRequest.addEventListener(egret.Event.COMPLETE,function(evt:egret.Event):void {
             const res = JSON.parse(httpRequest.response)
-            arr.push(
-                res.data.gamelist[0],
-                res.data.gamelist[4],
-                res.data.gamelist[5],
-                res.data.gamelist[6],
-                res.data.gamelist[7],
-                res.data.gamelist[8],
-                res.data.gamelist[10],
-                res.data.gamelist[12]
-            )
+            res.data.gamelist.map(item => {
+                arr.push(item)
+                console.log(item.appid)
+            })
             that.createGameScene(arr);
         },this);
         httpRequest.open("https://apinine.xiaozigame.com/api/active/getgamelist", egret.HttpMethod.GET);
@@ -147,36 +147,44 @@ class Main extends eui.UILayer {
 
         })
     }
-
+    
     /*navigateToMiniProgram(res, extra) {
+        console.log(res, extra)
         let path = ''
         if (res.extra === '') {
-            path = extra
+        path = extra
         } else {
-            path = ''
+        path = ''
         }
         return new Promise((resolve, reject) => {
-            wx.navigateToMiniProgram({
-                appId: res.appid,
-                path: path,
-                envVersion: 'release',
-                success(res) {
-                    console.log('path', path);
-                    resolve(res)
-                }
-            })
+        wx.navigateToMiniProgram({
+            appId: res.appid,
+            path: path,
+            envVersion: 'release',
+            success(res) {
+            console.log('success', path);
+            resolve(res)
+            },
+            fail(res) {
+            console.log('fail');
+            reject(res)
+            }
         })
-    }*/
+        })
+    }
+    "navigateToMiniProgramAppIdList": [
+        "wx3a2acd8aea020457"
+    ]*/
     
     private onClick( evt, extra ) {
         const userId = egret.localStorage.getItem('userId')
         platform.navigateToMiniProgram(evt, extra).then(res => {
             console.log(res)
-            
             const that = this
             const data = JSON.stringify({
               uid: userId,
               gid: evt.id,
+              type: '1'
             })
             const param = {
               appv: '1.0',
@@ -190,7 +198,30 @@ class Main extends eui.UILayer {
                 const res = JSON.parse(httpRequest.response)
                 console.log(res);
             },this);
-            httpRequest.open("https://testapione.xiaozigame.com/report", egret.HttpMethod.GET);
+            httpRequest.open("https://apione.xiaozigame.com/report", egret.HttpMethod.GET);
+            httpRequest.send(param);
+        }).catch(res => {
+            console.log('点击取消')
+            console.log(res)
+            const that = this
+            const data = JSON.stringify({
+              uid: userId,
+              gid: evt.id,
+              type: '0'
+            })
+            const param = {
+              appv: '1.0',
+              counter: 'enter',
+              data: data
+            }
+            let httpRequest:egret.HttpRequest = new egret.HttpRequest();
+            httpRequest.responseType = egret.HttpResponseType.TEXT;
+            httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            httpRequest.addEventListener(egret.Event.COMPLETE,function(evt:egret.Event):void {
+                const res = JSON.parse(httpRequest.response)
+                console.log(res);
+            },this);
+            httpRequest.open("https://apione.xiaozigame.com/report", egret.HttpMethod.GET);
             httpRequest.send(param);
         })
     }
@@ -199,6 +230,18 @@ class Main extends eui.UILayer {
      * 创建场景界面
      * Create scene interface
      */
+    
+    public rootStagW:number;
+    public rootStagH:number;
+
+    protected getCs(): void {
+        this.rootStagW=this.stage.stageWidth;
+        this.rootStagH=this.stage.stageHeight;
+        var gamePuzzle:puzzle = new puzzle();
+        gamePuzzle.x = -5;
+        gamePuzzle.y = (this.stage.stageHeight - gamePuzzle.height) / 2;
+        this.addChild(gamePuzzle);
+    }
     protected createGameScene(arr): void {
         const userId = egret.localStorage.getItem('userId')
         let labelA = new eui.Label();
@@ -243,7 +286,7 @@ class Main extends eui.UILayer {
                 group.addChild(name[index]);
             }
             let extra = ''
-            if (item.extra === '') {
+            if (item.extra !== '') {
                 extra = ''
             } else {
                 extra = `?data=${JSON.stringify({uid: userId, gid: item.id})}`

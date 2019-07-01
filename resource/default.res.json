@@ -1,25 +1,60 @@
 {
 	"groups": [
 		{
-			"keys": "bg_jpg,egret_icon_png,description_json",
+			"keys": "description_json,p0_09_png,p0_08_png,p0_07_png,p0_06_png,p0_05_png,p0_04_png,p0_03_png,p0_02_png,p0_01_png",
 			"name": "preload"
 		}
 	],
 	"resources": [
 		{
-			"url": "assets/bg.jpg",
-			"type": "image",
-			"name": "bg_jpg"
-		},
-		{
-			"url": "assets/egret_icon.png",
-			"type": "image",
-			"name": "egret_icon_png"
-		},
-		{
 			"url": "config/description.json",
 			"type": "json",
 			"name": "description_json"
+		},
+		{
+			"url": "assets/picEasy/p0_01.png",
+			"type": "image",
+			"name": "p0_01_png"
+		},
+		{
+			"url": "assets/picEasy/p0_02.png",
+			"type": "image",
+			"name": "p0_02_png"
+		},
+		{
+			"url": "assets/picEasy/p0_03.png",
+			"type": "image",
+			"name": "p0_03_png"
+		},
+		{
+			"url": "assets/picEasy/p0_04.png",
+			"type": "image",
+			"name": "p0_04_png"
+		},
+		{
+			"url": "assets/picEasy/p0_05.png",
+			"type": "image",
+			"name": "p0_05_png"
+		},
+		{
+			"url": "assets/picEasy/p0_06.png",
+			"type": "image",
+			"name": "p0_06_png"
+		},
+		{
+			"url": "assets/picEasy/p0_07.png",
+			"type": "image",
+			"name": "p0_07_png"
+		},
+		{
+			"url": "assets/picEasy/p0_08.png",
+			"type": "image",
+			"name": "p0_08_png"
+		},
+		{
+			"url": "assets/picEasy/p0_09.png",
+			"type": "image",
+			"name": "p0_09_png"
 		}
 	]
 }
