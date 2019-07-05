@@ -1,6 +1,6 @@
 
 class Main extends eui.UILayer {
-    public guide:number | string = '0';//判断显示游戏列表
+    public guide:number | string = '0';//判断显示游戏列表，0为游戏列表
 
     protected createChildren(): void {
         super.createChildren();
@@ -47,10 +47,11 @@ class Main extends eui.UILayer {
         const sign = await this.makeSign(data);
         const param = {
             code: code,
-            pkey: '',
+            pkey: pkey,
             time: time,
             sign: sign
         }
+        console.log('登录传的数据--->', param)
         let httpRequest:egret.HttpRequest = new egret.HttpRequest();
         httpRequest.responseType = egret.HttpResponseType.TEXT;
         httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
@@ -92,7 +93,6 @@ class Main extends eui.UILayer {
             const res = JSON.parse(httpRequest.response)
             res.data.gamelist.map(item => {
                 arr.push(item)
-                console.log(item.appid)
             })
             that.createGameScene(arr);
         },this);
@@ -176,21 +176,35 @@ class Main extends eui.UILayer {
         "wx3a2acd8aea020457"
     ]*/
     
-    private onClick( evt, extra ) {
+    private onClick( evt ) {
         const userId = egret.localStorage.getItem('userId')
+        let extra = ''
+        let enterType = ''
+        if (evt.extra !== '') {
+            extra = ''
+        } else {
+            extra = `?data=${JSON.stringify({uid: userId, gid: evt.id})}`
+        }
+        if (evt.type === '0') {
+            enterType = '1'
+        } else {
+            enterType = '2'
+        }
         platform.navigateToMiniProgram(evt, extra).then(res => {
-            console.log(res)
             const that = this
             const data = JSON.stringify({
               uid: userId,
-              gid: evt.id,
-              type: '1'
+              gid: typeof evt.id === 'undefined' ? '1' : evt.id,
+              type: '1',
+              appid: evt.appid,
+              enter_type: enterType
             })
             const param = {
               appv: '1.0',
               counter: 'enter',
               data: data
             }
+            console.log(param)
             let httpRequest:egret.HttpRequest = new egret.HttpRequest();
             httpRequest.responseType = egret.HttpResponseType.TEXT;
             httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
@@ -201,13 +215,13 @@ class Main extends eui.UILayer {
             httpRequest.open("https://apione.xiaozigame.com/report", egret.HttpMethod.GET);
             httpRequest.send(param);
         }).catch(res => {
-            console.log('点击取消')
-            console.log(res)
             const that = this
             const data = JSON.stringify({
               uid: userId,
-              gid: evt.id,
-              type: '0'
+              gid: typeof evt.id === 'undefined' ? '1' : evt.id,
+              type: '0',
+              appid: evt.appid,
+              enter_type: enterType
             })
             const param = {
               appv: '1.0',
@@ -255,7 +269,7 @@ class Main extends eui.UILayer {
 
         let group = new eui.Group();
         let label = new eui.Label();
-        label.text = "迷你抢手";
+        label.text = "神女拼图";
         label.x = 0;
         label.y = 0;
         label.width = this.stage.stageWidth;
@@ -285,13 +299,7 @@ class Main extends eui.UILayer {
                 name[index].height = 220
                 group.addChild(name[index]);
             }
-            let extra = ''
-            if (item.extra !== '') {
-                extra = ''
-            } else {
-                extra = `?data=${JSON.stringify({uid: userId, gid: item.id})}`
-            }
-            name[index].addEventListener( egret.TouchEvent.TOUCH_TAP, this.onClick.bind(this, item, extra), this );
+            name[index].addEventListener( egret.TouchEvent.TOUCH_TAP, this.onClick.bind(this, item), this );
         })
         //创建一个Scroller
         let myScroller = new eui.Scroller();

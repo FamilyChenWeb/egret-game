@@ -47,7 +47,7 @@ var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.guide = '0'; //判断显示游戏列表
+        _this.guide = '0'; //判断显示游戏列表，0为游戏列表
         return _this;
     }
     Main.prototype.createChildren = function () {
@@ -113,10 +113,11 @@ var Main = (function (_super) {
                         sign = _a.sent();
                         param = {
                             code: code,
-                            pkey: '',
+                            pkey: pkey,
                             time: time,
                             sign: sign
                         };
+                        console.log('登录传的数据--->', param);
                         httpRequest = new egret.HttpRequest();
                         httpRequest.responseType = egret.HttpResponseType.TEXT;
                         httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
@@ -171,7 +172,6 @@ var Main = (function (_super) {
                             var res = JSON.parse(httpRequest.response);
                             res.data.gamelist.map(function (item) {
                                 arr.push(item);
-                                console.log(item.appid);
                             });
                             that.createGameScene(arr);
                         }, this);
@@ -278,22 +278,38 @@ var Main = (function (_super) {
     "navigateToMiniProgramAppIdList": [
         "wx3a2acd8aea020457"
     ]*/
-    Main.prototype.onClick = function (evt, extra) {
+    Main.prototype.onClick = function (evt) {
         var _this = this;
         var userId = egret.localStorage.getItem('userId');
+        var extra = '';
+        var enterType = '';
+        if (evt.extra !== '') {
+            extra = '';
+        }
+        else {
+            extra = "?data=" + JSON.stringify({ uid: userId, gid: evt.id });
+        }
+        if (evt.type === '0') {
+            enterType = '1';
+        }
+        else {
+            enterType = '2';
+        }
         platform.navigateToMiniProgram(evt, extra).then(function (res) {
-            console.log(res);
             var that = _this;
             var data = JSON.stringify({
                 uid: userId,
-                gid: evt.id,
-                type: '1'
+                gid: typeof evt.id === 'undefined' ? '1' : evt.id,
+                type: '1',
+                appid: evt.appid,
+                enter_type: enterType
             });
             var param = {
                 appv: '1.0',
                 counter: 'enter',
                 data: data
             };
+            console.log(param);
             var httpRequest = new egret.HttpRequest();
             httpRequest.responseType = egret.HttpResponseType.TEXT;
             httpRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
@@ -304,13 +320,13 @@ var Main = (function (_super) {
             httpRequest.open("https://apione.xiaozigame.com/report", egret.HttpMethod.GET);
             httpRequest.send(param);
         }).catch(function (res) {
-            console.log('点击取消');
-            console.log(res);
             var that = _this;
             var data = JSON.stringify({
                 uid: userId,
-                gid: evt.id,
-                type: '0'
+                gid: typeof evt.id === 'undefined' ? '1' : evt.id,
+                type: '0',
+                appid: evt.appid,
+                enter_type: enterType
             });
             var param = {
                 appv: '1.0',
@@ -349,7 +365,7 @@ var Main = (function (_super) {
         this.addChild(labelA);
         var group = new eui.Group();
         var label = new eui.Label();
-        label.text = "迷你抢手";
+        label.text = "神女拼图";
         label.x = 0;
         label.y = 0;
         label.width = this.stage.stageWidth;
@@ -380,14 +396,7 @@ var Main = (function (_super) {
                 name[index].height = 220;
                 group.addChild(name[index]);
             }
-            var extra = '';
-            if (item.extra !== '') {
-                extra = '';
-            }
-            else {
-                extra = "?data=" + JSON.stringify({ uid: userId, gid: item.id });
-            }
-            name[index].addEventListener(egret.TouchEvent.TOUCH_TAP, _this.onClick.bind(_this, item, extra), _this);
+            name[index].addEventListener(egret.TouchEvent.TOUCH_TAP, _this.onClick.bind(_this, item), _this);
         });
         //创建一个Scroller
         var myScroller = new eui.Scroller();
